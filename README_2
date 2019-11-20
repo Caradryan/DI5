@@ -1,0 +1,262 @@
+Pakeičiau kodą
+a dalis pakeista nežymiai, efektas ne vien pozityvus
+b dalis perrašyta visiškai, tačiau rezultatai nebūtinai geri.
+
+New51.py galima laikyti main įjungus TEST_a bus išprintinama a dalis su keliomis R vertėmis, 
+o įjungus TEST_b bus testuojama b dalis. TEST_c paleis vieną b dalies sprendimą ir išprintins 
+Laukuvos vertes ir judėjimo policy.
+b dalies testas šiek tiek sudėtingesnis, nes programa veikia ne su visais parametrais ir nevisada.
+Apie tai toliau po a dalies aprašo.
+
+1.
+Modifikavau a dalies kodą. 
+Dabar suskaičiuoju "kažkokias" vertes ir ant langelių, kuriuose vaikščioti neapsimoka.
+Visgi:
+    1. Aš galiu nuspręsti, kad nėra preffered krypties jeigu į visas puses paeiti neapsimoka
+arba kad reikia mažiausiai neapsimokančia kryptimi keliauti - čia tiesiog pasirinkimas.
+    2. Pamodifikavus, kad veiktų su R  = -daug, kažkaip  sugadinu R = 0 - langelyje į kairę nuo -100 pametu kryptį.
+Laukuva, R =  0
+[[  1.   1.   1.   1.]
+ [  1. -inf   1.  -1.]
+ [  1.   1.   1.   1.]]
+preferred directions
+-------------------------------------
+|            0 |            0 |            0 |            0 |
+-------------------------------------
+|            0 |            0 |            0 |            0 |
+-------------------------------------
+|            0 |            0 |            0 |     ['Down'] |
+Šiuo metu problemą palieku neištaisytą. Galime apsimesti, kad protinga yra naudoti
+praeitą programos versiją, jeigu žinai, kad R=0 ir šitą versiją, jeigu R<-17
+
+"Kažkokios vertės šiek tiek itartinos" su R=-100. Su R=-200 jau atrodo 
+logiškai - vertės mažiau neigiamos langeliuose kur galima greitai baigti žaidimą
+
+Su -100 kažkaip atsiranda -1 langeliai. galimai dėl to kad pas mane funkcijos apibrėžime 
+išskiriami langeliai = -100. Reikėtų priskirti kažkokias dummy values, kad apeiti šitą problemą.
+pateikiu su R=-101, kur  matosi problemos nebėra.
+(nerodau preferred directions)
+init
+[[   0.    0.    0.  100.]
+ [   0.  -inf    0. -100.]
+ [   0.    0.    0.    0.]]
+
+Laukuva, R =-100
+[[-2.111 -1.    -0.397  1.   ]
+ [-1.      -inf -1.575 -1.   ]
+ [-1.    -2.25  -1.    -2.111]]
+
+Laukuva, R =-101
+[[-3.094 -1.673 -0.411  1.   ]
+ [-4.356   -inf -1.599 -1.   ]
+ [-5.345 -4.206 -2.943 -2.338]]
+
+Laukuva, R =-200
+[[ -7.043  -4.23   -1.73    1.   ]
+ [ -9.543    -inf  -3.57   -1.   ]
+ [-10.815  -8.474  -5.974  -3.775]]
+
+
+
+
+2. b dalis
+
+
+Pirmiausia, rezultatai "nelabai prasti", jeigu išvis išjungiu dalį su tikrinimu 
+ar patenka pakankamai kartų į langelius - tuomet gaunamas beveik visada tas pat 
+kelias (viršun tada dešinėn), tačiau kitų langelių vertės prastos (pvz langelio 
+po -100 vertė visada per didelė).
+Ypač gerai taip veikia, jeigu duodu mažai žingsnių walker f-jo viduje ir daug 
+kartų ją kviečiu - įtariu, kad taip gaunasi kažkas tarp ko prašo b ir a dalies su
+atsitiktiniais langeliais
+(Tik nusistovi vertė, panašesnė į vieną a dalies iteraciją)
+
+pvz.:
+Laukuva
+[[  52.1289225    69.9905482    72.39130435  100.        ]
+ [  47.35246158          -inf   69.9905482  -100.        ]
+ [  35.53890425   47.70640256   49.11440782   56.19924386]]
+policy
+[[   3.    3.    3.  100.]
+ [   0.  -inf    0. -100.]
+ [   0.    0.    0.    0.]]
+arba 
+
+[[  52.1289225    69.9905482    72.39130435  100.        ]
+ [  47.35246158          -inf   69.9905482  -100.        ]
+ [  35.53890425   47.70640256   49.11440782   56.19924386]]
+policy
+[[   3.    3.    3.  100.]
+ [   0.  -inf    0. -100.]
+ [   2.    0.    0.    2.]]
+
+Toliau sprendimas naudojant N(s,a) ar N(s)
+Pastebėjau, kad jeigu randamas labai blogas sprendinys, tai dažniaisi langeliai turi labai dideles vertes (>100)
+
+Jeigu padarau N(s, a), ką suprantu reiškiant skaičiuoju dažnį išėjimo ne tik iš langelio, bet
+ir tam tikra kryptimi, tai sprendimo negaunu, nebent atsitiktinai.
+Jeigu dažnį priskaičiuoju visoms kryptims (tuomet manau N(s)), tuomet sprendinius gaunu. Dažnai, priklausomai 
+nuo parametrų, tie patys langeliai irgi turi kokias nors keistas vertes, tačiau kartais
+gaunamos ir "protingos kryptys" visoje laukuvoje.
+
+------
+TEST_b
+------
+legenda
+['0 - Up', '1 - Down', '2 - Left', '3 - Right']
+'geras' pvz
+parametrai: R= -3 gamma= 1.0 NMIN= 5 ROPT= 1 NCUT= 60
+Laukuva
+[[  87.18518519   92.59259259   93.33333333  100.        ]
+ [  85.32510288          -inf   92.59259259 -100.        ]
+ [  80.81316872   85.27663466   86.00823045   86.74897119]]
+policy
+[[   3.    3.    3.  100.]
+ [   0.  -inf    0. -100.]
+ [   0.    3.    0.    0.]]
+
+'geras' pvz
+parametrai: R= -3 gamma= 0.8 NMIN= 5 ROPT= 3 NCUT= 60
+Laukuva
+[[  87.18518519   92.59259259   93.33333333  100.        ]
+ [  85.32510288          -inf   92.59259259 -100.        ]
+ [  80.81316872   85.27663466   86.00823045   86.74897119]]
+policy
+[[   3.    3.    3.  100.]
+ [   0.  -inf    0. -100.]
+ [   0.    3.    0.    0.]]
+
+'blogas' pvz
+parametrai: R= -3 gamma= 1.0 NMIN= 5 ROPT= 1 NCUT= 60
+Laukuva
+[[ 184.7973211   179.68138764  179.56813876  100.        ]
+ [ 184.87932125          -inf  197.         -100.        ]
+ [ 189.80015356  191.00076736  197.          197.0009592 ]]
+policy
+[[   0.    3.    0.  100.]
+ [   2.  -inf    0. -100.]
+ [   3.    3.    1.    2.]]
+
+
+Norėdamas ištestuoti, kiek gerai randamoi policy vertės sukūriau dvi funkcijas - sanityCheck ir sanityCheck2.
+pirmoji tikrina tik pagrindinį kelią (viršun, dešinėn) - -antroji - visus langelius
+
+Tuomet padatrius averageT = TESTm.mean(axis=0) (ar TESTm2) ganamas įvertis, kokia dalis testų, su tam tikrais
+parametras gavo "protingas vertes"
+
+Tam, kad testas būtų atliekamas pakankamai greitai naudoju mažai žingsnių.
+Sprendimas šiek tiek priklauso nuo žingsnių skaičiaus, o ar nusistovi šiuo metu netikrinau 
+(Jeigu priklauso nuo skaičiaus tai matyt ir nenusistovi)
+Neteisingus rezultatus galima gauti ir su ~1e6 žingsnių pasirinkus "normalius" parametrus
+
+
+Tam tikri TESTm ir TESTm2 pjūviai
+
+------
+TEST_b
+------
+
+Ropt [1, 2, 3]
+Nmin [5, 10, 50]
+Ncut [10, 20, 60, 100]
+gamma [0.8, 0.9, 0.95, 1.0]
+
+Ropt = 1 Nmin = 5 Ncut-Y [10, 20, 60, 100] gamma-X [0.8, 0.9, 0.95, 1.0]
+[[1.  1.  0.4 0.4]
+ [1.  0.8 1.  0.4]
+ [0.4 1.  0.6 0.8]
+ [0.8 0.6 1.  0.4]]
+Ropt = 1 Nmin = 10 Ncut-Y [10, 20, 60, 100] gamma-X [0.8, 0.9, 0.95, 1.0]
+[[1.  1.  1.  0.2]
+ [0.8 0.6 0.8 0.6]
+ [0.4 0.8 0.4 0.4]
+ [1.  0.6 1.  1. ]]
+Ropt = 1 Nmin = 50 Ncut-Y [10, 20, 60, 100] gamma-X [0.8, 0.9, 0.95, 1.0]
+[[1.  1.  1.  0.8]
+ [1.  1.  1.  1. ]
+ [1.  1.  1.  1. ]
+ [1.  1.  1.  1. ]]
+Ropt = 2 Nmin = 5 Ncut-Y [10, 20, 60, 100] gamma-X [0.8, 0.9, 0.95, 1.0]
+[[0.4 0.2 0.  0. ]
+ [0.4 0.2 0.2 0. ]
+ [0.6 0.6 0.2 0. ]
+ [0.4 0.2 0.2 0.2]]
+Ropt = 2 Nmin = 10 Ncut-Y [10, 20, 60, 100] gamma-X [0.8, 0.9, 0.95, 1.0]
+[[0.2 0.2 0.  0. ]
+ [0.2 0.4 0.4 0. ]
+ [0.4 0.6 0.4 0. ]
+ [0.6 0.6 0.8 0. ]]
+Ropt = 2 Nmin = 50 Ncut-Y [10, 20, 60, 100] gamma-X [0.8, 0.9, 0.95, 1.0]
+[[0.4 0.  0.  0. ]
+ [0.4 0.6 0.4 0. ]
+ [0.8 0.4 0.4 0. ]
+ [0.6 0.6 0.8 0. ]]
+Ropt = 3 Nmin = 5 Ncut-Y [10, 20, 60, 100] gamma-X [0.8, 0.9, 0.95, 1.0]
+[[0.4 0.  0.  0. ]
+ [0.4 0.  0.2 0. ]
+ [0.6 0.4 0.  0. ]
+ [0.6 0.  0.2 0. ]]
+Ropt = 3 Nmin = 10 Ncut-Y [10, 20, 60, 100] gamma-X [0.8, 0.9, 0.95, 1.0]
+[[0.  0.2 0.  0. ]
+ [0.2 0.  0.  0. ]
+ [0.4 0.2 0.  0. ]
+ [0.2 0.2 0.2 0. ]]
+Ropt = 3 Nmin = 50 Ncut-Y [10, 20, 60, 100] gamma-X [0.8, 0.9, 0.95, 1.0]
+[[0.2 0.2 0.  0. ]
+ [0.2 0.6 0.4 0. ]
+ [0.4 0.2 0.  0. ]
+ [0.2 0.4 0.2 0. ]]
+
+Manau, kad geriausi parametrai būtų Ropt ~ 1, Ncut ~10, gamma<1, Nmin ~ 50, tačiau šiuo atveju nežinome ar bendrai uždavinys
+išspręstas, nes tikrai nevisada pavyksta gauti geras vertes visuose langeliuose.
+ 
+
+visas policy
+Ropt = 1 Nmin = 5 Ncut-Y [10, 20, 60, 100] gamma-X [0.8, 0.9, 0.95, 1.0]
+[[0.8 1.  0.6 0.4]
+ [0.6 1.  0.8 0.8]
+ [0.8 0.6 1.  0.6]
+ [0.8 0.6 0.8 1. ]]
+Ropt = 1 Nmin = 10 Ncut-Y [10, 20, 60, 100] gamma-X [0.8, 0.9, 0.95, 1.0]
+[[1.  0.6 1.  0.6]
+ [0.8 0.8 0.4 0.6]
+ [0.8 0.6 0.8 1. ]
+ [1.  0.4 0.8 0.8]]
+Ropt = 1 Nmin = 50 Ncut-Y [10, 20, 60, 100] gamma-X [0.8, 0.9, 0.95, 1.0]
+[[1. 1. 1. 1.]
+ [1. 1. 1. 1.]
+ [1. 1. 1. 1.]
+ [1. 1. 1. 1.]]
+Ropt = 2 Nmin = 5 Ncut-Y [10, 20, 60, 100] gamma-X [0.8, 0.9, 0.95, 1.0]
+[[0.4 0.  0.2 0. ]
+ [0.2 0.6 0.2 0. ]
+ [0.2 0.6 0.4 0. ]
+ [0.4 0.6 0.  0.2]]
+Ropt = 2 Nmin = 10 Ncut-Y [10, 20, 60, 100] gamma-X [0.8, 0.9, 0.95, 1.0]
+[[0.  0.2 0.  0. ]
+ [0.4 0.4 0.2 0.2]
+ [0.8 0.6 0.2 0.4]
+ [1.  0.8 0.6 0. ]]
+Ropt = 2 Nmin = 50 Ncut-Y [10, 20, 60, 100] gamma-X [0.8, 0.9, 0.95, 1.0]
+[[0.  0.  0.  0. ]
+ [0.4 0.4 0.4 0. ]
+ [1.  1.  0.4 0. ]
+ [1.  0.6 0.4 0.2]]
+Ropt = 3 Nmin = 5 Ncut-Y [10, 20, 60, 100] gamma-X [0.8, 0.9, 0.95, 1.0]
+[[0.6 0.  0.2 0. ]
+ [0.6 0.2 0.2 0.2]
+ [0.6 0.4 0.  0. ]
+ [0.6 0.2 0.2 0. ]]
+Ropt = 3 Nmin = 10 Ncut-Y [10, 20, 60, 100] gamma-X [0.8, 0.9, 0.95, 1.0]
+[[0.2 0.4 0.  0. ]
+ [0.2 0.  0.  0. ]
+ [0.6 0.4 0.  0. ]
+ [0.  0.  0.  0.4]]
+Ropt = 3 Nmin = 50 Ncut-Y [10, 20, 60, 100] gamma-X [0.8, 0.9, 0.95, 1.0]
+[[0.  0.  0.  0. ]
+ [0.  0.6 0.  0. ]
+ [0.6 0.6 0.  0. ]
+ [0.6 0.4 0.  0. ]]
+
+
+ Šiuo atveju geriausi parametrai būtų Ropt ~ 1, Ncut ~20, gamma<0.9, Nmin ~ 500.
